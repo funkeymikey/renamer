@@ -8,47 +8,59 @@ namespace renamer
   {
     static void Main(string[] args)
     {
-      string directory = @"C:\Users\mike\OneDrive\Pictures\Blythe\New\11- November";
+      string directory = @"C:\Users\mike\OneDrive\Pictures\Blythe\New\12 - December";
       string[] files = Directory.GetFiles(directory);
 
       Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).jpg");
-      Regex one = new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\(\d\))?.[jpg|jpeg]", RegexOptions.IgnoreCase);
-      Regex two = new Regex(@"(?<year>\d\d\d\d)\.(?<month>\d\d)\.(?<day>\d\d) (?<hour>\d\d)-(?<minute>\d\d)-(?<second>\d\d).[jpg|jpeg]", RegexOptions.IgnoreCase);
+
+      Regex[] regexes = new Regex[]{
+        new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\(\d\))?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"(?<year>\d\d\d\d)\.(?<month>\d\d)\.(?<day>\d\d) (?<hour>\d\d)-(?<minute>\d\d)-(?<second>\d\d).[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d)(-\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(_\d\d\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+      };
 
       foreach (string path in files)
       {
         string[] parts = path.Split(@"\");
         string filename = parts[parts.Length - 1];
 
+        //if it's the way i want it, then skip
         if (ideal.IsMatch(filename))
           continue;
 
+        //find any matching regex
         Match match = null;
-        if (one.IsMatch(filename))
-          match = one.Match(filename);
-        if (two.IsMatch(filename))
-          match = two.Match(filename);
-
-
-        if (match != null)
+        foreach (Regex regex in regexes)
         {
-          string year = match.Groups["year"].Value;
-          string month = match.Groups["month"].Value;
-          string day = match.Groups["day"].Value;
-          string hour = match.Groups["hour"].Value;
-          string minute = match.Groups["minute"].Value;
-          string second = match.Groups["second"].Value;
-
-          string newName = $"{year}-{month}-{day} {hour}.{minute}.{second}.jpg";
-          string newPath = path.Replace(filename, newName);
-          Console.WriteLine($"renaming {filename} to {newName}");
-          File.Move(path, newPath);
+          if (regex.IsMatch(filename))
+          {
+            match = regex.Match(filename);
+            break;
+          }
         }
-        else
+
+        //if it's not ideal, and there's no matching regex, then log it
+        if (match == null)
         {
           Console.WriteLine($"need to rename: {filename}");
+          continue;
         }
+
+        //rename the file
+        string year = match.Groups["year"].Value;
+        string month = match.Groups["month"].Value;
+        string day = match.Groups["day"].Value;
+        string hour = match.Groups["hour"].Value;
+        string minute = match.Groups["minute"].Value;
+        string second = match.Groups["second"].Value;
+
+        string newName = $"{year}-{month}-{day} {hour}.{minute}.{second}.jpg";
+        string newPath = path.Replace(filename, newName);
+        Console.WriteLine($"renaming {filename} to {newName}");
+        File.Move(path, newPath);
       }
     }
+
   }
 }
