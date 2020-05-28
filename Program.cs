@@ -9,7 +9,7 @@ namespace renamer
     static void Main(string[] args)
     {
       // dotnet run
-      string directory = @"C:\Users\mike\OneDrive\Pictures\Blythe";
+      string directory = @"C:\Users\mikek\OneDrive\Pictures\Blythe\New\04 - April";
       string[] files = Directory.GetFiles(directory);
 
       Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).jpg");
@@ -20,6 +20,8 @@ namespace renamer
         new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d)(-\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
         new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d),(?<minute>\d\d),(?<second>\d\d).[jpg|jpeg]", RegexOptions.IgnoreCase),
         new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(_\d\d\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(_\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"BURST(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d_COVER)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
       };
 
       foreach (string path in files)
