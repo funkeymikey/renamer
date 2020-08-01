@@ -9,7 +9,7 @@ namespace renamer
     static void Main(string[] args)
     {
       // dotnet run
-      string directory = @"C:\Users\mikek\OneDrive\Pictures\Blythe\New\04 - April";
+      string directory = @"C:\Users\mike\OneDrive\Pictures\Children\New";
       string[] files = Directory.GetFiles(directory);
 
       Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).jpg");
