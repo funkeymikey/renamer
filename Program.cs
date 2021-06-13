@@ -24,6 +24,11 @@ namespace renamer
         new Regex(@"BURST(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d_COVER)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
       };
 
+      Regex[] utcRegexes = new Regex[]{
+        new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.NIGHT?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+      };
+
       foreach (string path in files)
       {
         string[] parts = path.Split(@"\");
@@ -33,8 +38,11 @@ namespace renamer
         if (ideal.IsMatch(filename))
           continue;
 
-        //find any matching regex
+        
+        bool isUtc = false;
         Match match = null;
+
+        //find if any localtime regexes match
         foreach (Regex regex in regexes)
         {
           if (regex.IsMatch(filename))
@@ -44,24 +52,56 @@ namespace renamer
           }
         }
 
-        //if it's not ideal, and there's no matching regex, then log it
+        //if none of the local regexes matched, check the utc regexes
         if (match == null)
+        {
+          foreach (Regex regex in utcRegexes)
+          {
+            if (regex.IsMatch(filename))
+            {
+              match = regex.Match(filename);
+              isUtc = true;
+              break;
+            }
+          }
+        }
+
+        //if it's not ideal, and there's no matching regex, then log it
+        if(match == null)
         {
           Console.WriteLine($"need to rename: {filename}");
           continue;
         }
 
-        //rename the file
-        string year = match.Groups["year"].Value;
-        string month = match.Groups["month"].Value;
-        string day = match.Groups["day"].Value;
-        string hour = match.Groups["hour"].Value;
-        string minute = match.Groups["minute"].Value;
-        string second = match.Groups["second"].Value;
+        //find the new name for the file
+        string newName;
+        if(isUtc)
+        {
+          int yearUtc = int.Parse(match.Groups["year"].Value);
+          int monthUtc = int.Parse(match.Groups["month"].Value);
+          int dayUtc = int.Parse(match.Groups["day"].Value);
+          int hourUtc = int.Parse(match.Groups["hour"].Value);
+          int minuteUtc = int.Parse(match.Groups["minute"].Value);
+          int secondUtc = int.Parse(match.Groups["second"].Value);
 
-        string newName = $"{year}-{month}-{day} {hour}.{minute}.{second}.jpg";
-        string newPath = path.Replace(filename, newName);
+          DateTime utcDate = new DateTime(yearUtc, monthUtc, dayUtc, hourUtc, minuteUtc, secondUtc, DateTimeKind.Utc);
+          DateTime localDate = utcDate.ToLocalTime();
+          newName = $"{localDate.Year.ToString().PadLeft(4, '0')}-{localDate.Month.ToString().PadLeft(2, '0')}-{localDate.Day.ToString().PadLeft(2, '0')} {localDate.Hour.ToString().PadLeft(2, '0')}.{localDate.Minute.ToString().PadLeft(2, '0')}.{localDate.Second.ToString().PadLeft(2, '0')}.jpg";
+        }
+        else
+        {
+          string year = match.Groups["year"].Value;
+          string month = match.Groups["month"].Value;
+          string day = match.Groups["day"].Value;
+          string hour = match.Groups["hour"].Value;
+          string minute = match.Groups["minute"].Value;
+          string second = match.Groups["second"].Value;
+          newName = $"{year}-{month}-{day} {hour}.{minute}.{second}.jpg";
+        }
+        
+        //perform the rename
         Console.WriteLine($"renaming {filename} to {newName}");
+        string newPath = path.Replace(filename, newName);
         File.Move(path, newPath);
       }
     }
