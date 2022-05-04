@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -9,7 +10,7 @@ namespace renamer
     static void Main(string[] args)
     {
       // dotnet run
-      string directory = @"C:\Users\mike\OneDrive\Pictures\Children\New";
+      string directory = @"C:\Users\mike\OneDrive\Pictures\Children\New\02 - February";
       string[] files = Directory.GetFiles(directory);
 
       Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).jpg");
@@ -27,8 +28,12 @@ namespace renamer
       Regex[] utcRegexes = new Regex[]{
         new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
         new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.NIGHT?.[jpg|jpeg]", RegexOptions.IgnoreCase),
+        new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.MP?.[jpg|jpeg]", RegexOptions.IgnoreCase),
       };
 
+      
+      List<string> unmatchedFiles =new List<string>();
+      
       foreach (string path in files)
       {
         string[] parts = path.Split(@"\");
@@ -38,7 +43,6 @@ namespace renamer
         if (ideal.IsMatch(filename))
           continue;
 
-        
         bool isUtc = false;
         Match match = null;
 
@@ -69,7 +73,7 @@ namespace renamer
         //if it's not ideal, and there's no matching regex, then log it
         if(match == null)
         {
-          Console.WriteLine($"need to rename: {filename}");
+          unmatchedFiles.Add(filename);
           continue;
         }
 
@@ -104,6 +108,12 @@ namespace renamer
         string newPath = path.Replace(filename, newName);
         File.Move(path, newPath);
       }
+    
+      //output these unmatched messsages all at the end
+      foreach (string fileToRename in unmatchedFiles){
+        Console.WriteLine($"need to rename {fileToRename}");
+      }
+
     }
 
   }
