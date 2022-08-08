@@ -10,10 +10,10 @@ namespace renamer
     static void Main(string[] args)
     {
       // dotnet run
-      string directory = @"C:\Users\mike\OneDrive\Pictures\Children\New\02 - February";
+      string directory = @"C:\Users\mike\OneDrive\Pictures\Children\New\04 - April";
       string[] files = Directory.GetFiles(directory);
 
-      Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).jpg");
+      Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).[jpg|mp4]");
 
       Regex[] regexes = new Regex[]{
         new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\(\d\))?.[jpg|jpeg]", RegexOptions.IgnoreCase),
@@ -31,6 +31,10 @@ namespace renamer
         new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.MP?.[jpg|jpeg]", RegexOptions.IgnoreCase),
       };
 
+
+      Regex[] movieRegexes = new Regex[]{
+        new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.mp4", RegexOptions.IgnoreCase),
+      };
       
       List<string> unmatchedFiles =new List<string>();
       
@@ -45,6 +49,7 @@ namespace renamer
 
         bool isUtc = false;
         Match match = null;
+        string extension = "jpg";
 
         //find if any localtime regexes match
         foreach (Regex regex in regexes)
@@ -52,6 +57,16 @@ namespace renamer
           if (regex.IsMatch(filename))
           {
             match = regex.Match(filename);
+            break;
+          }
+        }
+
+        foreach (Regex regex in movieRegexes)
+        {
+          if (regex.IsMatch(filename))
+          {
+            match = regex.Match(filename);
+            extension = "mp4";
             break;
           }
         }
@@ -90,7 +105,7 @@ namespace renamer
 
           DateTime utcDate = new DateTime(yearUtc, monthUtc, dayUtc, hourUtc, minuteUtc, secondUtc, DateTimeKind.Utc);
           DateTime localDate = utcDate.ToLocalTime();
-          newName = $"{localDate.Year.ToString().PadLeft(4, '0')}-{localDate.Month.ToString().PadLeft(2, '0')}-{localDate.Day.ToString().PadLeft(2, '0')} {localDate.Hour.ToString().PadLeft(2, '0')}.{localDate.Minute.ToString().PadLeft(2, '0')}.{localDate.Second.ToString().PadLeft(2, '0')}.jpg";
+          newName = $"{localDate.Year.ToString().PadLeft(4, '0')}-{localDate.Month.ToString().PadLeft(2, '0')}-{localDate.Day.ToString().PadLeft(2, '0')} {localDate.Hour.ToString().PadLeft(2, '0')}.{localDate.Minute.ToString().PadLeft(2, '0')}.{localDate.Second.ToString().PadLeft(2, '0')}.{extension}";
         }
         else
         {
@@ -100,7 +115,7 @@ namespace renamer
           string hour = match.Groups["hour"].Value;
           string minute = match.Groups["minute"].Value;
           string second = match.Groups["second"].Value;
-          newName = $"{year}-{month}-{day} {hour}.{minute}.{second}.jpg";
+          newName = $"{year}-{month}-{day} {hour}.{minute}.{second}.{extension}";
         }
         
         //perform the rename
