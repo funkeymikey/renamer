@@ -9,6 +9,16 @@ namespace renamer
   {
     static void Main(string[] args)
     {
+
+      // to adjust date/time exif metadata:
+      // video/mp4 (NB: timezones are weird):
+      //  > "exiftool.exe" -QuickTime:CreateDate="$year:$month:$day $hour:$min:$sec" "$fileName"
+
+      // images:
+      //  > exiftool -SubSecDateTimeOriginal="2022:12:12 12:00:00.24-08:00" /path/to/files/
+      // C:\Users\mike\Downloads\exiftool-12.71>"exiftool(-k).exe" -SubSecDateTimeOriginal="2023:10:28 17:00:37.24-05:00" "C:\Users\mike\OneDrive\Pictures\Children\New\10 - October\2023-10-28 17.00.37.jpg"
+
+
       // dotnet run
       string directory = @"C:\Users\mike\OneDrive\Pictures\Children\New\04 - April";
       string[] files = Directory.GetFiles(directory);
@@ -16,6 +26,7 @@ namespace renamer
       Regex ideal = new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d).[jpg|mp4]");
 
       Regex[] regexes = new Regex[]{
+        new Regex(@"IMG(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\(\d\))?.*.[jpg|jpeg]", RegexOptions.IgnoreCase),
         new Regex(@"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\(\d\))?.[jpg|jpeg]", RegexOptions.IgnoreCase),
         new Regex(@"(?<year>\d\d\d\d)\.(?<month>\d\d)\.(?<day>\d\d) (?<hour>\d\d)-(?<minute>\d\d)-(?<second>\d\d).[jpg|jpeg]", RegexOptions.IgnoreCase),
         new Regex(@"(?<year>\d\d\d\d)-(?<month>\d\d)-(?<day>\d\d) (?<hour>\d\d)\.(?<minute>\d\d)\.(?<second>\d\d)(-\d)?.[jpg|jpeg]", RegexOptions.IgnoreCase),
@@ -34,6 +45,8 @@ namespace renamer
 
       Regex[] movieRegexes = new Regex[]{
         new Regex(@"PXL_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.mp4", RegexOptions.IgnoreCase),
+        new Regex(@"VID_(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)_(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\d\d\d)?.mp4", RegexOptions.IgnoreCase),
+        new Regex(@"VID(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(\(\d\))?.mp4", RegexOptions.IgnoreCase),
       };
       
       List<string> unmatchedFiles =new List<string>();
